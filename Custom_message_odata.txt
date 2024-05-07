@@ -1,0 +1,48 @@
+ method STUDENT_ITEMSET_GET_ENTITY.
+
+  READ TABLE IT_KEY_TAB INTO DATA(GS_KEY_TAB) WITH KEY NAME = 'Id'.
+   IF GS_KEY_TAB-VALUE IS NOT INITIAL.
+
+      DATA(LV_CUST) = GS_KEY_TAB-VALUE.
+
+*      LV_CUST = | { LV_CUST ALPHA = IN } |.
+
+      SELECT SINGLE * FROM zstudent_item
+                     INTO  ER_ENTITY
+            WHERE Id = LV_CUST.
+
+     ENDIF.
+
+     "RAISE EXCEPTION
+
+     IF ER_ENTITY-ID IS INITIAL.
+
+       DATA : LO_MESSAGE_CONTAINER TYPE REF TO /IWBEP/IF_MESSAGE_CONTAINER,
+             IV_MSG_TEXT TYPE BAPI_MSG.
+
+       lo_message_container = mo_context->get_message_container( ).
+       IV_msg_text = 'Sales Order Does not Exist'.
+
+*       CALL METHOD LO_MESSAGE_CONTAINER->ADD_MESSAGE_TEXT_ONLY
+
+       CALL METHOD lo_message_container->add_message_text_only
+         EXPORTING
+           iv_msg_type               = 'E'
+           iv_msg_text               = IV_msg_text
+*           iv_error_category         = /IWBEP/IF_MESSAGE_CONTAINER=>GCS_ERROR_CATEGORY-PROCESSING
+*           iv_is_leading_message     = ABAP_TRUE
+*           iv_entity_type            =
+*           it_key_tab                =
+*           iv_add_to_response_header = ABAP_FALSE
+*           iv_message_target         =
+*           it_message_target         =
+*           iv_omit_target            = ABAP_FALSE
+*           iv_is_transition_message  = ABAP_FALSE
+*           iv_content_id             =
+           .
+
+       raise EXCEPTION type /IWBEP/CX_MGW_BUSI_EXCEPTION
+       EXPORTING
+         message_container = lo_message_container.
+       ENDIF.
+  endmethod.
